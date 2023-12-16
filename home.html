@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparison Sorting</title>
+  <style>
+    .heading {
+      color: #3498db; /* Blue color */
+      background-color: #2c3e50; /* Dark blue color */
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sorting-btns-container {
+      display: flex;
+      gap: .3rem;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #27ae60; /* Green color */
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+    }
+
+    .bar-display {
+      height: 150px;
+      padding: .5rem;
+      margin-top: .5rem;
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: end;
+      border: .1rem solid black;
+      gap: .2rem;
+    }
+
+    .bar-element {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #8e44ad; /* Purple color */
+    }
+
+    .bar {
+      background-color: #e74c3c; /* Red color */
+      width: .7rem;
+    }
+
+    .input-grp {
+      display: flex;
+      border: 2px solid black;
+    }
+
+    input[type=range] {
+      cursor: pointer;
+    }
+
+    .operations-btns {
+      display: flex;
+      gap: .3rem;
+    }
+
+    .footer {
+      background-color: #34495e; /* Dark gray-blue color */
+      color: white;
+      padding: 1px;
+      margin-top: 1rem;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+
+<body>
+    <div class="container">
+
+
+        <div class="heading">
+          <h1>Comparison Sorting Algorithms</h1>
+        </div>
+    
+    
+    
+        <div class="sorting-btns-container">
+          <button onclick="generateBars()">Randomize Array</button>
+          <button onclick="insertionSort()">Inserstion Sort</button>
+          <button onclick="selectionSort()">Selection Sort</button>
+          <button onclick="bubbleSort()">Bubble Sort</button>
+          <button onclick="quickSort()">Quick Sort</button>
+          <button onclick="mergeSort()">Merge Sort</button>
+          <button onclick="shellSort()">Shell Sort</button>
+          <button onclick="changeSizeRed()">Change Size(decrese size)</button>
+          <button onclick="changeSizeInc()">Change Size(increse size)</button>
+        </div>
+    
+        <div class="bar-display"></div>
+    
+        <div class="operations-btns">
+          <div class="input-grp">
+            <label for="numBars">Bar count</label>
+            <input type="range" name="numBars" id="numBars" value="50" min="10" max="80" oninput="generateBars()">
+          </div>
+          <div class="input-grp">
+            <label for="delay">Animation Speed</label>
+            <input type="range" name="speed" id="delayTime" min="0" max="100" value="20"
+              oninput="setDelayTime(100 - Number.parseInt(this.value))">
+          </div>
+        </div>
+    
+       
+      </div>
+    
+    
+      <script>
+        const barsContainer = document.querySelector('.bar-display')
+        const barCount = document.querySelector('#numBars')
+        let bars = [];
+    
+        let delayTimeMiliSec = 100 - Number.parseInt(document.querySelector('#delayTime').value);
+    
+        function setDelayTime(t) {
+          delayTimeMiliSec = t;
+        }
+    
+        function changeSizeRed() {
+          bars.forEach((value, index) => {
+            if (value > 10) {
+              bars[index] = value - 2;
+            }
+          });
+          renderBars();
+        }
+    
+        function changeSizeInc() {
+          bars.forEach((value, index) => {
+            if (value < 100) {
+              bars[index] = value + 2;
+            }
+          });
+          renderBars();
+        }
+    
+        function isSorted() {
+          console.log(bars.length)
+          for (let i = 1; i < bars.length; i++) {
+            if (bars[i] < bars[i - 1]) {
+              return false;
+            }
+          }
+          return true;
+        }
+    
+        async function delay() {
+          return new Promise(resolve => setTimeout(resolve, delayTimeMiliSec));
+        }
+    
+        function generateBars(count) {
+          count = Number.parseInt(barCount.value);
+          const usedNumbers = new Set(); // Keep track of used numbers
+          bars = [];
+    
+          for (let i = 0; i < count; i++) {
+            // Generate a random number
+            let randomNumber;
+            do {
+              randomNumber = Math.floor(Math.random() * 100); // Generate between 0 and 100
+            } while (usedNumbers.has(randomNumber)); // Check if it's already used
+    
+            // Add the unique number to the array and mark it as used
+            bars.push(randomNumber);
+            usedNumbers.add(randomNumber);
+          }
+    
+          renderBars();
+        }
+    
+        function renderBars() {
+          barsContainer.innerHTML = '';
+          bars.forEach(barHeight => {
+            const barElement = document.createElement('div');
+            const b = document.createElement('div');
+            const l = document.createElement('span');
+            barElement.classList.add('bar-element');
+            b.classList.add('bar');
+            l.innerHTML = barHeight;
+            b.style.height = barHeight + 'px';
+            barElement.append(b, l);
+            barsContainer.append(barElement);
+          });
+        }
+    
+        // Merge Sort
+        async function mergeSort() {
+          if (isSorted()) generateBars();
+          await performMergeSort(bars, 0, bars.length - 1);
+        }
+    
+        async function performMergeSort(bars, low, high) {
+          if (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            await performMergeSort(bars, low, mid);
+            await performMergeSort(bars, mid + 1, high);
+            await merge(bars, low, mid, high);
+          }
+        }
+    
+        async function merge(bars, low, mid, high) {
+          const leftArray = bars.slice(low, mid + 1);
+          const rightArray = bars.slice(mid + 1, high + 1);
+    
+          let i = 0,
+            j = 0,
+            k = low;
+    
+          while (i < leftArray.length && j < rightArray.length) {
+            if (leftArray[i] <= rightArray[j]) {
+              bars[k++] = leftArray[i++];
+            } else {
+              bars[k++] = rightArray[j++];
+            }
+            renderBars();
+            await delay()// Adjust the delay as needed
+          }
+    
+          while (i < leftArray.length) {
+            bars[k++] = leftArray[i++];
+            renderBars();
+            await delay();
+          }
+    
+          while (j < rightArray.length) {
+            bars[k++] = rightArray[j++];
+            renderBars();
+            await delay();
+          }
+        }
+    
+        // Quick Sort
+        async function quickSort() {
+          if (isSorted()) generateBars();
+          await performQuickSort(bars, 0, bars.length - 1);
+        }
+    
+        async function performQuickSort(bars, low, high) {
+          if (low < high) {
+            const pivotIndex = await partition(bars, low, high);
+            await Promise.all([
+              performQuickSort(bars, low, pivotIndex - 1),
+              performQuickSort(bars, pivotIndex + 1, high)
+            ]);
+          }
+        }
+    
+        async function partition(bars, low, high) {
+          const pivot = bars[high];
+          let i = low - 1;
+    
+          for (let j = low; j < high; j++) {
+            if (bars[j] < pivot) {
+              i++;
+              [bars[i], bars[j]] = [bars[j], bars[i]];
+              renderBars(bars);
+              await delay();
+            }
+          }
+    
+          [bars[i + 1], bars[high]] = [bars[high], bars[i + 1]];
+          renderBars(bars);
+          await delay();
+    
+          return i + 1;
+        }
+    
+        // Bubble Sort
+        async function bubbleSort() {
+          if (isSorted()) generateBars();
+          await performBubbleSort(bars);
+        }
+    
+        async function performBubbleSort(bars) {
+          const n = bars.length;
+    
+          for (let i = 0; i < n - 1; i++) {
+            for (let j = 0; j < n - i - 1; j++) {
+              if (bars[j] > bars[j + 1]) {
+                [bars[j], bars[j + 1]] = [bars[j + 1], bars[j]];
+                renderBars(bars);
+                await delay();
+              }
+            }
+          }
+        }
+    
+        // Shell Sort
+        async function shellSort() {
+          if (isSorted()) generateBars();
+          await performShellSort(bars);
+        }
+    
+        async function performShellSort(bars) {
+          const n = bars.length;
+          for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+            for (let i = gap; i < n; i++) {
+              const temp = bars[i];
+              let j;
+              for (j = i; j >= gap && bars[j - gap] > temp; j -= gap) {
+                bars[j] = bars[j - gap];
+                renderBars(bars);
+                await delay();
+              }
+              bars[j] = temp;
+            }
+          }
+        }
+    
+        // Insertion Sort
+        async function insertionSort() {
+          if (isSorted()) generateBars();
+          await performInsertionSort(bars);
+        }
+    
+        async function performInsertionSort(bars) {
+          const n = bars.length;
+          for (let i = 1; i < n; i++) {
+            const key = bars[i];
+            let j = i - 1;
+            while (j >= 0 && bars[j] > key) {
+              bars[j + 1] = bars[j];
+              renderBars(bars);
+              await delay();
+              j--;
+            }
+            bars[j + 1] = key;
+          }
+        }
+    
+        // Selection Sort
+        async function selectionSort() {
+          if (isSorted()) generateBars();
+          await performSelectionSort(bars);
+        }
+    
+        async function performSelectionSort(bars) {
+          const n = bars.length;
+    
+          for (let i = 0; i < n - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < n; j++) {
+              if (bars[j] < bars[minIndex]) {
+                minIndex = j;
+              }
+            }
+    
+            [bars[i], bars[minIndex]] = [bars[minIndex], bars[i]];
+            renderBars(bars);
+            await delay();
+          }
+        }
+    
+    
+        window.onload = () => generateBars();
+      </script>
+</body>
+
+</html>
